@@ -23,6 +23,7 @@ class HyperparameterTuner:
                    val_loader: DataLoader,
                    param_grid: Dict[str, List[Any]],
                    num_classes: int,
+                   num_workers: int = 4,
                    **model_kwargs) -> Dict[str, Any]:
         """
         Perform grid search over hyperparameters.
@@ -33,6 +34,7 @@ class HyperparameterTuner:
             val_loader: DataLoader for validation data
             param_grid: Dictionary of parameters to search
             num_classes: Number of classes for the model
+            num_workers: Number of workers for DataLoader
             **model_kwargs: Additional arguments for model instantiation
         
         Returns:

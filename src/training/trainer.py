@@ -9,14 +9,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ModelTrainer:
-    def __init__(self, device: torch.device):
+    def __init__(self, device: torch.device, num_workers: int = 4):
         """
         Initialize the model trainer.
         
         Args:
             device: The device to use for training (CPU/GPU)
+            num_workers: Number of workers for DataLoader
         """
         self.device = device
+        self.num_workers = num_workers
         self.criterion = nn.CrossEntropyLoss()
     
     def get_optimizer(self, 
@@ -126,6 +128,9 @@ class ModelTrainer:
         model = model.to(self.device)
         optimizer = self.get_optimizer(optimizer_name, model, lr, weight_decay)
         history = []
+        
+        train_loader = DataLoader(train_loader.dataset, batch_size=train_loader.batch_size, shuffle=True, num_workers=self.num_workers)
+        val_loader = DataLoader(val_loader.dataset, batch_size=val_loader.batch_size, shuffle=False, num_workers=self.num_workers)
         
         for epoch in range(num_epochs):
             # Train
