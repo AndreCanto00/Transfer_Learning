@@ -10,18 +10,29 @@ project_root/
 │   ├── __init__.py
 │   ├── data/
 │   │   ├── __init__.py
-│   │   ├── dataset_utils.py
-│   │   └── data_loader.py
-│   └── utils/
+│   │   ├── dataset_utils.py     # Gestione e split del dataset
+│   │   └── data_loader.py       # DataLoader e trasformazioni
+│   │
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   └── file_operations.py   # Operazioni sui file
+│   │
+│   └── training/
 │       ├── __init__.py
-│       └── file_operations.py
+│       ├── trainer.py           # Logica di training
+│       └── hyperparameter_tuning.py  # Ricerca iperparametri
 │
 ├── tests/
 │   ├── __init__.py
-│   ├── test_dataset_utils.py
-│   ├── test_file_operations.py
-│   ├── test_data_loader.py
-│   └── conftest.py
+│   ├── conftest.py             # Fixture condivise
+│   ├── test_dataset_utils.py   # Test per dataset_utils
+│   ├── test_file_operations.py # Test per file_operations
+│   ├── test_data_loader.py     # Test per data_loader
+│   ├── test_trainer.py         # Test per trainer
+│   └── test_hyperparameter_tuning.py  # Test per hyperparameter_tuning
 │
-├── requirements.txt
-└── notebook.ipynb
+├── notebooks/
+│   └── training.ipynb          # Notebook principale
+│
+├── requirements.txt            # Dipendenze del progetto
+└── README.md                   # Documentazione del progetto
