@@ -5,7 +5,6 @@ numpy
 requests
 matplotlib
 Pillow
-sklearn
 pytest
 pytest-cov
 Pillow
