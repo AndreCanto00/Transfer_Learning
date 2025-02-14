@@ -56,4 +56,8 @@ def split_dataset(base_path, output_path, test_size=0.3, random_state=42):
                     os.path.join(target_path, image)
                 )
     
+    print(f"Training set size: {len(train_images)}")
+    print(f"Validation set size: {len(val_images)}")
+    print(f"Test set size: {len(test_images)}")
+    
     return train_path, val_path, test_path
