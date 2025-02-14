@@ -16,9 +16,10 @@ def sample_image_folders(tmp_path):
         class_path = split_path / 'class1'
         os.makedirs(class_path)
         
-        # Create a dummy image
-        img = Image.fromarray(np.random.randint(0, 255, (32, 32, 3), dtype=np.uint8))
-        img.save(class_path / 'sample.jpg')
+        # Create multiple dummy images to satisfy batch size
+        for i in range(3):  # Create 3 images
+            img = Image.fromarray(np.random.randint(0, 255, (32, 32, 3), dtype=np.uint8))
+            img.save(class_path / f'sample_{i}.jpg')
         
         paths[split] = split_path
     
