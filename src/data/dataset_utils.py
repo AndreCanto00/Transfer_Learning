@@ -29,10 +29,15 @@ def split_dataset(base_path, output_path, test_size=0.3, random_state=42):
     classes = [class_name for class_name in listdir(base_path) 
               if isdir(os.path.join(base_path, class_name))]
     
+    class_distribution = {'train': {}, 'val': {}, 'test': {}}
+    
     for class_name in classes:
         class_folder = os.path.join(base_path, class_name)
         images = [img for img in listdir(class_folder) 
                  if isfile(join(class_folder, img))]
+        
+        if not images:
+            continue  # Skip if no images in the class folder
         
         # Split into train and test-val
         train_images, test_val_images = train_test_split(
@@ -55,9 +60,18 @@ def split_dataset(base_path, output_path, test_size=0.3, random_state=42):
                     os.path.join(class_folder, image),
                     os.path.join(target_path, image)
                 )
+        
+        # Update class distribution
+        class_distribution['train'][class_name] = len(train_images)
+        class_distribution['val'][class_name] = len(val_images)
+        class_distribution['test'][class_name] = len(test_images)
     
     print(f"Training set size: {len(train_images)}")
     print(f"Validation set size: {len(val_images)}")
     print(f"Test set size: {len(test_images)}")
+    
+    print("Class distribution:")
+    for split, dist in class_distribution.items():
+        print(f"{split}: {dist}")
     
     return train_path, val_path, test_path
