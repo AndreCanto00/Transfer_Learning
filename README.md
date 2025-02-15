@@ -1,5 +1,7 @@
 # Transfer_Learning
 
+[![Run Python Tests](https://github.com/AndreCanto00/Transfer_Learning/actions/workflows/test.yml/badge.svg)](https://github.com/AndreCanto00/Transfer_Learning/actions/workflows/test.yml)
+
 project_root/
 │
 ├── .github/
