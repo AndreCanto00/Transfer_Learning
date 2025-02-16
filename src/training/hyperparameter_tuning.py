@@ -1,110 +1,100 @@
-from typing import Dict, List, Any
+import torch
+import torch.nn as nn
+from typing import Dict, List, Any, Tuple
 import logging
-from torch import nn
-from torch.utils.data import DataLoader
-from .trainer import ModelTrainer
+from .model_trainer import ModelTrainer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class HyperparameterTuner:
     def __init__(self, trainer: ModelTrainer):
-        """
-        Initialize the hyperparameter tuner.
-        
-        Args:
-            trainer: ModelTrainer instance
-        """
         self.trainer = trainer
     
     def grid_search(self,
                    model_class: Any,
-                   train_loader: DataLoader,
-                   val_loader: DataLoader,
-                   param_grid: Dict[str, List[Any]],
-                   num_classes: int,
-                   num_workers: int = 4,
-                   **model_kwargs) -> Dict[str, Any]:
+                   train_loader: torch.utils.data.DataLoader,
+                   val_loader: torch.utils.data.DataLoader,
+                   hyperparameters: Dict[str, List[Any]],
+                   model_kwargs: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Perform grid search over hyperparameters.
-        
-        Args:
-            model_class: The model class to instantiate
-            train_loader: DataLoader for training data
-            val_loader: DataLoader for validation data
-            param_grid: Dictionary of parameters to search
-            num_classes: Number of classes for the model
-            num_workers: Number of workers for DataLoader
-            **model_kwargs: Additional arguments for model instantiation
-        
-        Returns:
-            Dictionary containing best hyperparameters and results
+        Esegue una ricerca a griglia sugli iperparametri.
         """
         best_accuracy = 0.0
         best_hyperparameters = {}
         best_model = None
-        all_results = []
+        results = []
         
-        # Extract parameters from grid
-        learning_rates = param_grid.get('learning_rates', [0.001])
-        weight_decays = param_grid.get('weight_decays', [0.0001])
-        optimizer_names = param_grid.get('optimizer_names', ['Adam'])
-        num_epochs = param_grid.get('num_epochs', 10)
+        # Estrazione parametri
+        learning_rates = hyperparameters.get('learning_rates', [0.001])
+        weight_decays = hyperparameters.get('weight_decays', [0.0001])
+        optimizer_names = hyperparameters.get('optimizer_names', ['Adam'])
         
-        total_combinations = (len(learning_rates) * 
-                            len(weight_decays) * 
-                            len(optimizer_names))
+        total_combinations = (
+            len(learning_rates) * 
+            len(weight_decays) * 
+            len(optimizer_names)
+        )
         
-        logger.info(f"Starting grid search with {total_combinations} combinations")
+        logger.info(f"Inizio grid search con {total_combinations} combinazioni")
         
         for lr in learning_rates:
             for weight_decay in weight_decays:
                 for optimizer_name in optimizer_names:
-                    logger.info(f"\nTesting: LR={lr}, "
-                              f"Weight Decay={weight_decay}, "
-                              f"Optimizer={optimizer_name}")
+                    logger.info(
+                        f"\nTest con: LR={lr}, "
+                        f"Weight Decay={weight_decay}, "
+                        f"Optimizer={optimizer_name}"
+                    )
                     
-                    # Initialize model
-                    model = model_class(num_classes=num_classes, **model_kwargs)
+                    # Inizializzazione modello
+                    model = model_class(**model_kwargs)
                     
-                    # Train model
-                    accuracy_val, history = self.trainer.train_model(
+                    # Training
+                    accuracy, train_info = self.trainer.train(
                         model=model,
                         train_loader=train_loader,
                         val_loader=val_loader,
                         lr=lr,
                         weight_decay=weight_decay,
-                        optimizer_name=optimizer_name,
-                        num_epochs=num_epochs
+                        optimizer_name=optimizer_name
                     )
                     
-                    # Store results
-                    result = {
-                        'lr': lr,
-                        'weight_decay': weight_decay,
-                        'optimizer': optimizer_name,
-                        'val_accuracy': accuracy_val,
-                        'history': history
-                    }
-                    all_results.append(result)
-                    
-                    # Update best model if necessary
-                    if accuracy_val > best_accuracy:
-                        best_accuracy = accuracy_val
-                        best_hyperparameters = {
+                    # Salvataggio risultati
+                    current_result = {
+                        'hyperparameters': {
                             'lr': lr,
                             'weight_decay': weight_decay,
                             'optimizer': optimizer_name
-                        }
+                        },
+                        'accuracy': accuracy,
+                        'training_info': train_info
+                    }
+                    results.append(current_result)
+                    
+                    # Aggiornamento migliori iperparametri
+                    if accuracy > best_accuracy:
+                        best_accuracy = accuracy
+                        best_hyperparameters = current_result['hyperparameters']
                         best_model = model
         
-        logger.info("\nGrid Search Results:")
-        logger.info(f"Best Hyperparameters: {best_hyperparameters}")
-        logger.info(f"Best Validation Accuracy: {best_accuracy*100:.2f}%")
+        logger.info("\nRisultati Grid Search:")
+        logger.info(f"Migliori Iperparametri: {best_hyperparameters}")
+        logger.info(f"Miglior Accuracy: {best_accuracy*100:.2f}%")
         
         return {
+            'best_model': best_model,
             'best_hyperparameters': best_hyperparameters,
             'best_accuracy': best_accuracy,
-            'best_model': best_model,
-            'all_results': all_results
+            'all_results': results
         }
+
+    def evaluate_best_model(self,
+                          model: nn.Module,
+                          test_loader: torch.utils.data.DataLoader) -> float:
+        """
+        Valuta il modello migliore sul test set.
+        """
+        test_accuracy = self.trainer.evaluate(model, test_loader)
+        logger.info(f"Test Accuracy: {test_accuracy*100:.2f}%")
+        return test_accuracy
