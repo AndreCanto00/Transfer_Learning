@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from typing import Dict, List, Any, Tuple
 import logging
-from .model_trainer import ModelTrainer
+from .trainer import ModelTrainer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,6 +29,7 @@ class HyperparameterTuner:
         learning_rates = hyperparameters.get('learning_rates', [0.001])
         weight_decays = hyperparameters.get('weight_decays', [0.0001])
         optimizer_names = hyperparameters.get('optimizer_names', ['Adam'])
+        num_epochs = hyperparameters.get('num_epochs', 10)
         
         total_combinations = (
             len(learning_rates) * 
@@ -57,7 +58,8 @@ class HyperparameterTuner:
                         val_loader=val_loader,
                         lr=lr,
                         weight_decay=weight_decay,
-                        optimizer_name=optimizer_name
+                        optimizer_name=optimizer_name,
+                        num_epochs=num_epochs
                     )
                     
                     # Salvataggio risultati

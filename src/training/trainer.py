@@ -88,16 +88,20 @@ class ModelTrainer:
              val_loader: torch.utils.data.DataLoader,
              lr: float, 
              weight_decay: float, 
-             optimizer_name: str) -> Tuple[float, Dict]:
+             optimizer_name: str,
+             num_epochs: int = None) -> Tuple[float, Dict]:
         """
         Esegue il training completo del modello.
         """
+        if num_epochs is None:
+            num_epochs = self.num_epochs
+        
         model = model.to(self.device)
         optimizer = self.get_optimizer(optimizer_name, model, lr, weight_decay)
         best_val_acc = 0.0
         training_history = []
         
-        for epoch in range(self.num_epochs):
+        for epoch in range(num_epochs):
             # Training
             epoch_loss = self.train_epoch(model, train_loader, optimizer)
             
@@ -106,7 +110,7 @@ class ModelTrainer:
             
             # Logging
             logger.info(
-                f"Epoch {epoch+1}/{self.num_epochs} "
+                f"Epoch {epoch+1}/{num_epochs} "
                 f"Loss: {epoch_loss:.4f} "
                 f"Val Acc: {val_accuracy*100:.2f}%"
             )

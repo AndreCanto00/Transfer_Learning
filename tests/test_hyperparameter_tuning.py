@@ -28,19 +28,21 @@ def tuner():
 
 def test_grid_search(tuner, mock_data):
     # Define a small parameter grid for testing
-    param_grid = {
+    hyperparameters = {
         'learning_rates': [0.001, 0.01],
         'weight_decays': [0.0001],
         'optimizer_names': ['Adam', 'SGD'],
         'num_epochs': 2
     }
     
+    model_kwargs = {'num_classes': 2}
+    
     results = tuner.grid_search(
         model_class=SimpleModel,
         train_loader=mock_data,
         val_loader=mock_data,
-        param_grid=param_grid,
-        num_classes=2
+        hyperparameters=hyperparameters,
+        model_kwargs=model_kwargs
     )
     
     # Check that all expected keys are present in results
@@ -65,23 +67,27 @@ def test_grid_search(tuner, mock_data):
     assert len(results['all_results']) == 4  # 2 learning rates * 1 weight decay * 2 optimizers
     
     for result in results['all_results']:
-        assert 'lr' in result
-        assert 'weight_decay' in result
-        assert 'optimizer' in result
-        assert 'val_accuracy' in result
-        assert 'history' in result
-        assert len(result['history']) == 2  # num_epochs = 2
+        assert 'hyperparameters' in result
+        assert 'lr' in result['hyperparameters']
+        assert 'weight_decay' in result['hyperparameters']
+        assert 'optimizer' in result['hyperparameters']
+        assert 'accuracy' in result
+        assert 'training_info' in result
+        assert 'history' in result['training_info']
+        assert len(result['training_info']['history']) == hyperparameters['num_epochs']  # num_epochs = 2
 
 def test_grid_search_empty_grid(tuner, mock_data):
     # Test with empty parameter grid (should use defaults)
-    param_grid = {}
+    hyperparameters = {}
+    
+    model_kwargs = {'num_classes': 2}
     
     results = tuner.grid_search(
         model_class=SimpleModel,
         train_loader=mock_data,
         val_loader=mock_data,
-        param_grid=param_grid,
-        num_classes=2
+        hyperparameters=hyperparameters,
+        model_kwargs=model_kwargs
     )
     
     # Should still work with default values
@@ -90,22 +96,21 @@ def test_grid_search_empty_grid(tuner, mock_data):
 
 def test_grid_search_model_kwargs(tuner, mock_data):
     # Test passing additional kwargs to model
-    param_grid = {
+    hyperparameters = {
         'learning_rates': [0.001],
         'weight_decays': [0.0001],
         'optimizer_names': ['Adam'],
         'num_epochs': 1
     }
     
-    extra_kwarg = {'extra_param': 42}
+    model_kwargs = {'num_classes': 2, 'extra_param': 42}
     
     results = tuner.grid_search(
         model_class=SimpleModel,
         train_loader=mock_data,
         val_loader=mock_data,
-        param_grid=param_grid,
-        num_classes=2,
-        **extra_kwarg
+        hyperparameters=hyperparameters,
+        model_kwargs=model_kwargs
     )
     
     assert isinstance(results['best_model'], SimpleModel)

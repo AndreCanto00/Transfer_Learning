@@ -64,7 +64,7 @@ def test_evaluate(trainer, mock_data):
 
 def test_train_model(trainer, mock_data):
     model = SimpleModel()
-    val_accuracy, history = trainer.train_model(
+    val_accuracy, result = trainer.train(
         model=model,
         train_loader=mock_data,
         val_loader=mock_data,
@@ -76,10 +76,10 @@ def test_train_model(trainer, mock_data):
     
     assert isinstance(val_accuracy, float)
     assert 0 <= val_accuracy <= 1
-    assert len(history) == 2  # Should have metrics for 2 epochs
+    assert len(result['history']) == 2  # Should have metrics for 2 epochs
     
     # Check history structure
-    for epoch_data in history:
+    for epoch_data in result['history']:
         assert 'epoch' in epoch_data
         assert 'loss' in epoch_data
         assert 'val_accuracy' in epoch_data
