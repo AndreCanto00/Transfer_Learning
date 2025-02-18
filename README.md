@@ -40,7 +40,7 @@ bustness, fine-tuning is performed multiple times, and average results are repor
 
 ## [Paper here](/transfer_learning-based_image_classification-paper.pdf)
 
-## [Notebook here](/files/)
+## [Notebook here](/notebook.ipynb)
 
 ## How to run:
 - Download the Datasets [miniImageNet (train)](https://drive.google.com/drive/folders/17a09kkqVivZQFggCw9I_YboJ23tcexNM), [EuroSAT(RGB)](https://github.com/phelber/EuroSAT). 
